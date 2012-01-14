@@ -75,12 +75,12 @@ object Knowledge {
     def given(p: Sentence): Knowledge = {
       p match {
         case p @ Atom(_) =>
-          if (facts contains ¬(p))
+          if (impliedBy(facts, ¬(p)))
             Absurdity
           else
             new Facts(facts + p)
         case p @ ¬(Atom(n)) =>
-          if (facts contains n)
+          if (impliedBy(facts, n))
             Absurdity
           else
             new Facts(facts + p)
@@ -108,15 +108,15 @@ object Knowledge {
         case True => Always
         case False => Never
         case p @ Atom(_) =>
-          if (facts contains p)
+          if (impliedBy(facts, p))
             Always
-          else if (facts contains ¬(p))
+          else if (impliedBy(facts, ¬(p)))
             Never
           else Sometimes
         case p @ ¬(n @ Atom(_)) =>
-          if (facts contains p)
+          if (impliedBy(facts, p))
             Always
-          else if (facts contains n)
+          else if (impliedBy(facts, n))
             Never
           else Sometimes
         case _ => Sometimes
@@ -149,13 +149,13 @@ object Knowledge {
 
   val Absurdity: Knowledge = new Knowledge {
     def given(p: Sentence) =
-      sys.error("Tried to add givens to an already contradictory set")
+      sys.error("Tried to add givens to an already inconsistent set")
 
     def satisfiabilityOf(p: Sentence) =
-      sys.error("Tried to determine satisfiability with contradictory givens")
+      sys.error("Tried to determine satisfiability with inconsistent givens")
 
     def reduce(p: Sentence) =
-      sys.error("Tried to reduce with contradictory givens")
+      sys.error("Tried to reduce with inconsistent givens")
 
     override def toString = "Absurdity"
   }
@@ -168,4 +168,7 @@ object Knowledge {
       case Seq(w) => w
       case ws => new Alternatives(ws)
     }
+
+  private def impliedBy(facts: Set[Sentence], s: Sentence): Boolean =
+    facts contains s
 }
