@@ -74,13 +74,8 @@ object Knowledge {
 
     def given(p: Sentence): Knowledge = {
       p match {
-        case p @ Atom(_) =>
-          if (impliedBy(facts, ¬(p)))
-            Absurdity
-          else
-            new Facts(facts + p)
-        case p @ ¬(Atom(n)) =>
-          if (impliedBy(facts, n))
+        case p @ (Atom(_) | ¬(Atom(_))) =>
+          if (disprovenBy(facts, p))
             Absurdity
           else
             new Facts(facts + p)
@@ -107,16 +102,10 @@ object Knowledge {
       p match {
         case True => Always
         case False => Never
-        case p @ Atom(_) =>
-          if (impliedBy(facts, p))
+        case p @ (Atom(_) | ¬(Atom(_))) =>
+          if (provenBy(facts, p))
             Always
-          else if (impliedBy(facts, ¬(p)))
-            Never
-          else Sometimes
-        case p @ ¬(n @ Atom(_)) =>
-          if (impliedBy(facts, p))
-            Always
-          else if (impliedBy(facts, n))
+          else if (disprovenBy(facts, p))
             Never
           else Sometimes
         case _ => Sometimes
@@ -169,6 +158,13 @@ object Knowledge {
       case ws => new Alternatives(ws)
     }
 
-  private def impliedBy(facts: Set[Sentence], s: Sentence): Boolean =
+  private def provenBy(facts: Set[Sentence], s: Sentence): Boolean =
     facts contains s
+
+  private def disprovenBy(facts: Set[Sentence], s: Sentence): Boolean =
+    s match {
+      case p @ Atom(_) => facts contains ¬(p)
+      case ¬(Atom(p)) => facts contains p
+      case _ => sys.error("Tried to test a non-literal against a knowledge base")
+    }
 }
