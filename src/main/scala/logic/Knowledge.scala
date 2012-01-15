@@ -123,12 +123,10 @@ object Knowledge {
     }
 
     def satisfiabilityOf(p: Sentence): Satisfiability =
-      (worlds foldLeft (Never: Satisfiability)) { (s, k) =>
-        (s, k satisfiabilityOf p) match {
-          case (Always, _) | (_, Always) => Always
-          case (Sometimes, _) | (_, Sometimes) => Sometimes
-          case _ => Never
-        }
+      worlds.map(_ satisfiabilityOf p).distinct match {
+        case Seq(Always) => Always
+        case Seq(Never) => Never
+        case _ => Sometimes
       }
 
     override def toString = worlds mkString(" || ")
