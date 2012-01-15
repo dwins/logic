@@ -41,7 +41,7 @@ object Knowledge {
               if (p_ == True || q_ == True) True
               else if (q_ == False)         p
               else if (p_ == False)         q
-              else if (p_ != p)             p_ ∨ q_
+              else if (p_ != p)             p_ ∨ q
               else if (q_ != q)             p ∨ q_
               else                          orig
             }
