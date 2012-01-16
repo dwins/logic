@@ -5,8 +5,8 @@ import Arbitrary.arbitrary, Prop._
 
 object KnowledgeSpecification extends Properties("Knowledge") {
   import Generators._
-  import Knowledge.Oblivion._
   import Sentence._
+  import Knowledge.Oblivion._
 
   def atomsIn(s: Sentence): Set[Atom] = {
     def helper(s: Sentence, accum: Set[Atom]): Set[Atom] = 
