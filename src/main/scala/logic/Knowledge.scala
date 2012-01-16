@@ -1,4 +1,6 @@
 package logic
+import Sentence._
+
 trait Knowledge {
   def given(p: Sentence): Knowledge
   def satisfiabilityOf(p: Sentence): Satisfiability
@@ -110,16 +112,6 @@ object Knowledge {
       case Seq() => Absurdity
       case Seq(w) => w
       case ws => new Alternatives(ws)
-    }
-
-  private def provenBy(facts: Set[Sentence], s: Sentence): Boolean =
-    facts contains s
-
-  private def disprovenBy(facts: Set[Sentence], s: Sentence): Boolean =
-    s match {
-      case p @ Atom(_) => facts contains ¬(p)
-      case ¬(Atom(p)) => facts contains p
-      case _ => sys.error("Tried to test a non-literal against a knowledge base")
     }
 
   /**
