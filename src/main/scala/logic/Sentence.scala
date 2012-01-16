@@ -1,8 +1,6 @@
 package logic
 
-trait Sentential {
-  type Sentence
-  
+trait Sentential[Sentence] {
   val False: Sentence
   val True: Sentence
 
@@ -215,72 +213,73 @@ trait Sentential {
   }
 }
 
-object Sentence extends Sentential {
+object Symbolic {
   sealed trait Sentence
   case object False extends Sentence
   case object True extends Sentence
 
-  private case class Atom(s: Symbol) extends Sentence {
+  case class Atom(s: Symbol) extends Sentence {
     override def toString = s.toString
   }
 
-  private case class Not(p: Sentence) extends Sentence {
+  case class Not(p: Sentence) extends Sentence {
     override def toString = "¬" + p.toString
   }
 
-  private case class And(p: Sentence, q: Sentence) extends Sentence {
+  case class And(p: Sentence, q: Sentence) extends Sentence {
     override def toString = "(%s ∧ %s)" format(p, q)
   }
 
-  private case class Or(p: Sentence, q: Sentence) extends Sentence {
+  case class Or(p: Sentence, q: Sentence) extends Sentence {
     override def toString = "(%s ∨ %s)" format(p, q)
   }
 
-  def and(p: Sentence, q: Sentence): Sentence = And(p, q)
-  def extractAnd(p: Sentence): Option[(Sentence, Sentence)] =
-    p match {
-      case And(p, q) => Some((p, q))
-      case _ => None
-    }
-
-  def or(p: Sentence, q: Sentence): Sentence = Or(p, q)
-  def extractOr(p: Sentence): Option[(Sentence, Sentence)] =
-    p match {
-      case Or(p, q) => Some((p, q))
-      case _ => None
-    }
-
-  def not(p: Sentence): Sentence = Not(p)
-  def extractNot(p: Sentence): Option[Sentence] =
-    p match {
-      case Not(p) => Some(p)
-      case _ => None
-    }
-
-  def isLiteral(p: Sentence): Boolean =
-    p match {
-      case Atom(_) | Not(Atom(_)) => true
-      case _ => false
-    }
-
   implicit def symbolAsAtom(s: Symbol): Sentence = Atom(s)
-
-  def provenBy(facts: Set[Sentence], s: Sentence): Boolean =
-    facts contains s
-
-  def disprovenBy(facts: Set[Sentence], s: Sentence): Boolean = {
-    import Ops._
-    s match {
-      case p @ Atom(_) => facts contains ¬(p)
-      case ¬(Atom(p)) => facts contains p
-      case _ => sys.error("Tried to test a non-literal against a knowledge base")
-    }
-  }
 }
 
-object Knowledge {
-  val logicSystem = (Sentence: Sentential)
-  import logicSystem._, Ops._
+object Sentential {
+  implicit object symbolicSentences extends Sentential[Symbolic.Sentence] {
+    import Symbolic._
+    val True = Symbolic.True
+    val False = Symbolic.False
 
-  def apply(facts: Sentence*) = (facts foldLeft Oblivion)(_ given _)
+    def and(p: Sentence, q: Sentence): Sentence = And(p, q)
+    def extractAnd(p: Sentence): Option[(Sentence, Sentence)] =
+      p match {
+        case And(p, q) => Some((p, q))
+        case _ => None
+      }
+
+    def or(p: Sentence, q: Sentence): Sentence = Or(p, q)
+    def extractOr(p: Sentence): Option[(Sentence, Sentence)] =
+      p match {
+        case Or(p, q) => Some((p, q))
+        case _ => None
+      }
+
+    def not(p: Sentence): Sentence = Not(p)
+    def extractNot(p: Sentence): Option[Sentence] =
+      p match {
+        case Not(p) => Some(p)
+        case _ => None
+      }
+
+    def isLiteral(p: Sentence): Boolean =
+      p match {
+        case Atom(_) | Not(Atom(_)) => true
+        case _ => false
+      }
+
+    def provenBy(facts: Set[Sentence], s: Sentence): Boolean =
+      facts contains s
+
+    def disprovenBy(facts: Set[Sentence], s: Sentence): Boolean = {
+      import Ops._
+      s match {
+        case p @ Atom(_) => facts contains ¬(p)
+        case ¬(Atom(p)) => facts contains p
+        case _ => sys.error("Tried to test a non-literal against a knowledge base")
+      }
+    }
+  }
 }

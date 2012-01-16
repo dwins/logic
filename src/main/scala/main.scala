@@ -1,6 +1,9 @@
-import logic.Sentence._, Ops._
+import logic.Sentential, logic.Symbolic._
 object main extends App {
-  val kb = Oblivion.given('A)
+  val system = implicitly[Sentential[Sentence]]
+  import system.{ Absurdity, Knowledge, Oblivion }, system.Ops._
+
+  val kb = Oblivion.given(Atom('A))
 
   def test(p: Sentence) = println(kb.reduce(p))
 
