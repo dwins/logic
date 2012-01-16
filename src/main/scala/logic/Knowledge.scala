@@ -8,56 +8,12 @@ trait Knowledge {
 object Knowledge {
   private abstract class Impl extends Knowledge {
     def reduce(p: Sentence): Sentence = {
-      def helper(p: Sentence): Sentence =
-        p match {
-          case p @ (False | True) => p
-          case ¬(True) => False
-          case ¬(False) => True
-          case ¬(¬(p)) => p
-          case ¬(p) => ¬(helper(p))
-          case orig @ (p And q) =>
-            val pTrue = given(p)
-            val qTrue = given(q)
-            if (pTrue == Absurdity || qTrue == Absurdity)
-              False
-            else {
-              val q_ = pTrue.reduce(q)
-              val p_ = qTrue.reduce(p)
-              if (p_ == False || q_ == False) False
-              else if (q_ == True)            p
-              else if (p_ == True)            q
-              else if (p_ != p)               p_ ∧ q
-              else if (q_ != q)               p ∧ q_
-              else                            orig
-            }
-          case orig @ (p Or q) =>
-            val pFalse = given(¬(p))
-            val qFalse = given(¬(q))
-            if (pFalse == Absurdity || qFalse == Absurdity)
-              True
-            else {
-              val q_ = pFalse.reduce(q)
-              val p_ = qFalse.reduce(p)
-              if (p_ == True || q_ == True) True
-              else if (q_ == False)         p
-              else if (p_ == False)         q
-              else if (p_ != p)             p_ ∨ q
-              else if (q_ != q)             p ∨ q_
-              else                          orig
-            }
-          case p => 
-            val sat = satisfiabilityOf(p)
-            if (sat == Always)     True
-            else if (sat == Never) False
-            else                   p
-        }
-
       @annotation.tailrec
       def iterate(p: Sentence, limit: Int): Sentence =
         if (limit <= 0) {
           p
         } else {
-          val p_ = helper(p)
+          val p_ = simplifyOnce(p, this)
           if (p == p_)
             p
           else
@@ -165,4 +121,55 @@ object Knowledge {
       case ¬(Atom(p)) => facts contains p
       case _ => sys.error("Tried to test a non-literal against a knowledge base")
     }
+
+  /**
+   * Use a Knowledge base to simplify a Sentence. If no applicable reductions
+   * are found, the original sentence will be returned.  This method only
+   * simplifies one "level"; it may be effective to call it repetitively to get
+   * multiple levels of reduction.
+   */
+  private def simplifyOnce(p: Sentence, kb: Knowledge): Sentence = {
+    p match {
+      case p @ (False | True) => p
+      case ¬(True) => False
+      case ¬(False) => True
+      case ¬(¬(p)) => p
+      case ¬(p) => ¬(simplifyOnce(p, kb))
+      case orig @ (p And q) =>
+        val pTrue = kb.given(p)
+        val qTrue = kb.given(q)
+        if (pTrue == Absurdity || qTrue == Absurdity)
+          False
+        else {
+          val q_ = simplifyOnce(q, pTrue)
+          val p_ = simplifyOnce(p, qTrue)
+          if (p_ == False || q_ == False) False
+          else if (q_ == True)            p
+          else if (p_ == True)            q
+          else if (p_ != p)               p_ ∧ q
+          else if (q_ != q)               p ∧ q_
+          else                            orig
+        }
+      case orig @ (p Or q) =>
+        val pFalse = kb.given(¬(p))
+        val qFalse = kb.given(¬(q))
+        if (pFalse == Absurdity || qFalse == Absurdity)
+          True
+        else {
+          val q_ = simplifyOnce(q, pFalse)
+          val p_ = simplifyOnce(p, qFalse)
+          if (p_ == True || q_ == True) True
+          else if (q_ == False)         p
+          else if (p_ == False)         q
+          else if (p_ != p)             p_ ∨ q
+          else if (q_ != q)             p ∨ q_
+          else                          orig
+        }
+      case p => 
+        val sat = kb.satisfiabilityOf(p)
+        if (sat == Always)     True
+        else if (sat == Never) False
+        else                   p
+    }
+  }
 }
