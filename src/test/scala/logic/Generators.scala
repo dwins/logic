@@ -1,9 +1,9 @@
 package logic
+
+import Symbolic.{ Sentence, Atom }, Sentential.symbolicSentences._, Ops._
 import org.scalacheck._, Arbitrary.arbitrary
 
 object Generators {
-  import Sentence._
-
   implicit lazy val arbitrarySentence: Arbitrary[Sentence] = {
     val atoms = for (s <- Gen.oneOf('A, 'B, 'C)) yield Atom(s)
 
