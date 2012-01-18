@@ -1,3 +1,9 @@
+name := "logic"
+
+organization := "me.dwins"
+
+version := "0.1"
+
 initialCommands := """
 import logic._
 import Sentential.symbolicSentences._
