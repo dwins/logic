@@ -11,6 +11,34 @@ object Knowledge {
 
   def Absurdity[S]: Knowledge[S] = absurdity.asInstanceOf[Knowledge[S]]
 
+  def sat[S](p: S)(implicit evidence: Sentential[S]): Option[Set[S]] = {
+    import evidence._, evidence.Ops._
+
+    def anAtom(p: S): Option[S] =
+      p match {
+        case ¬(a @ Literal()) => Some(a)
+        case a @ Literal() => Some(a)
+        case ¬(p) => anAtom(p)
+        case p ∨ q => anAtom(p) orElse anAtom(q)
+        case p ∧ q => anAtom(p) orElse anAtom(q)
+        case _ => None
+      }
+
+    def recurse(p: S, kb: Knowledge[S], accum: Set[S]): Option[Set[S]] =
+      p match {
+        case False => None
+        case True => Some(accum)
+        case p =>
+          val Some(atom) = anAtom(p)
+          val kb2 = kb.given(atom)
+          lazy val kb3 = kb.given(¬(atom))
+          recurse(kb2.reduce(p), kb2, accum + atom) orElse
+          recurse(kb3.reduce(p), kb3, accum + ¬(atom))
+      }
+
+    recurse(Oblivion.reduce(p), Oblivion, Set.empty)
+  }
+
   private val absurdity: Knowledge[Any] = new Knowledge[Any] {
     def given(p: Any) =
       sys.error("Tried to add givens to an already inconsistent set")

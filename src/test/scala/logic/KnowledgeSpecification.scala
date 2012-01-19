@@ -11,6 +11,8 @@ object KnowledgeSpecification extends Properties("Knowledge") {
   val oblivion = Knowledge.Oblivion: Knowledge[Symbolic.Sentence]
   import oblivion._
 
+  import Knowledge.sat
+
   def atomsIn(s: Sentence): Set[Atom] = {
     def helper(s: Sentence, accum: Set[Atom]): Set[Atom] = 
       s match {
@@ -91,6 +93,14 @@ object KnowledgeSpecification extends Properties("Knowledge") {
   property("Disjunction with self") =
     forAll { (s: Sentence) => 
       truthTable(reduce(s ∨ s))(atomsIn(s)) == truthTable(s)(atomsIn(s))
+    }
+
+  property("Satisfiability") =
+    forAll { (s: Sentence) =>
+      sat(s).forall { assignment =>
+        val kb = assignment.foldLeft(Knowledge.Oblivion) { _ given _ }
+        kb.reduce(s) == True
+      }
     }
 
   // TODO: Rewrite this to construct implied sentences instead of hoping to
