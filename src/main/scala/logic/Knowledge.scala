@@ -28,9 +28,8 @@ object Knowledge {
     require(worlds forall(Absurdity !=),
       "Alternatives should not be created with Absurdity as a possible world")
 
-    def given(p: S): Knowledge[S] = {
+    def given(p: S): Knowledge[S] =
       possibleWorlds(worlds map (_ given p))
-    }
 
     def satisfiabilityOf(p: S): Satisfiability =
       worlds.map(_ satisfiabilityOf p).distinct match {
@@ -82,7 +81,8 @@ object Knowledge {
             Always
           else if (disprovenBy(facts, p))
             Never
-          else Sometimes
+          else
+            Sometimes
         case _ => Sometimes
       }
 
