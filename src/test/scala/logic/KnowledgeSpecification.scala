@@ -1,14 +1,13 @@
 package logic
 
-import org.scalacheck._
-import Arbitrary.arbitrary, Prop._
+import org.scalacheck._, Arbitrary._, Prop._
 
 object KnowledgeSpecification extends Properties("Knowledge") {
   import Generators._
   import Symbolic.{ Atom, Sentence }
-  import Sentential.symbolicSentences._,  Ops._
+  import Sentential.symbolicSentences._, Ops._
 
-  val oblivion = Knowledge.Oblivion: Knowledge[Symbolic.Sentence]
+  val oblivion = Knowledge.Oblivion[Symbolic.Sentence]
   import oblivion._
 
   import Knowledge.sat
