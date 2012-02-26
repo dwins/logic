@@ -1,4 +1,4 @@
-package logic
+package dwins.logic
 
 trait Satisfiability
 case object Always extends Satisfiability

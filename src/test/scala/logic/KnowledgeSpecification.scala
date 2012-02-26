@@ -1,4 +1,4 @@
-package logic
+package dwins.logic
 
 import org.scalacheck._, Arbitrary._, Prop._
 

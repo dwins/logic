@@ -1,4 +1,4 @@
-package logic
+package dwins.logic
 
 object Symbolic {
   sealed trait Sentence

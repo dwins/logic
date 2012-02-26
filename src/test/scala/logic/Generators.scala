@@ -1,4 +1,4 @@
-package logic
+package dwins.logic
 
 import Symbolic.{ Sentence, Atom }, Sentential.symbolicSentences._, Ops._
 import org.scalacheck._, Arbitrary.arbitrary, Shrink.shrink

@@ -1,6 +1,6 @@
 name := "logic"
 
-organization := "me.dwins"
+organization := "dwins"
 
 version := "0.1"
 

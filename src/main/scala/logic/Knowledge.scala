@@ -1,4 +1,4 @@
-package logic
+package dwins.logic
 
 sealed trait Knowledge[S] {
   def given(p: S): Knowledge[S]

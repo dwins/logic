@@ -1,4 +1,4 @@
-package logic
+package dwins.logic
 
 trait Sentential[Sentence] {
   val False: Sentence
