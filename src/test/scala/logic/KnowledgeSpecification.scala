@@ -3,14 +3,13 @@ package dwins.logic
 import org.scalacheck._, Arbitrary._, Prop._
 
 object KnowledgeSpecification extends Properties("Knowledge") {
+  import Knowledge.sat
+  import symbolic._
   import Generators._
-  import Symbolic.{ Atom, Sentence }
-  import Sentential.symbolicSentences._, Ops._
 
-  val oblivion = Knowledge.Oblivion[Symbolic.Sentence]
+  val oblivion = Knowledge.Oblivion[Sentence]
   import oblivion._
 
-  import Knowledge.sat
 
   def atomsIn(s: Sentence): Set[Atom] = {
     def helper(s: Sentence, accum: Set[Atom]): Set[Atom] = 
@@ -19,7 +18,7 @@ object KnowledgeSpecification extends Properties("Knowledge") {
         case p @ Atom(_) => accum + p
         case And(p, q) => helper(p, helper(q, accum))
         case Or(p, q) => helper(p, helper(q, accum))
-        case ¬(p) => helper(p, accum)
+        case Not(p) => helper(p, accum)
       }
 
     helper(s, Set.empty)
@@ -43,7 +42,7 @@ object KnowledgeSpecification extends Properties("Knowledge") {
           case False => false
           case True => true
           case p @ Atom(_) => as(p)
-          case ¬(s) => !(eval(s))
+          case Not(s) => !(eval(s))
           case And(p, q) => eval(p) && eval(q)
           case Or(p, q) => eval(p) || eval(q)
         }
@@ -60,7 +59,7 @@ object KnowledgeSpecification extends Properties("Knowledge") {
         case True | False | Atom(_) => accum + 1
         case And(p, q) => helper(p, helper(q, accum + 1))
         case Or(p, q) => helper(p, helper(q, accum + 1))
-        case ¬(p) => helper(p, accum)
+        case Not(p) => helper(p, accum)
       }
 
     helper(s, 0)
@@ -79,25 +78,25 @@ object KnowledgeSpecification extends Properties("Knowledge") {
     }
 
   property("Conjunction with negation") =
-    forAll { (s: Sentence) => reduce(s ∧ ¬(s)) == False }
+    forAll { (s: Sentence) => reduce(And(s, Not(s))) == False }
 
   property("Disjunction with negation") =
-    forAll { (s: Sentence) => reduce(s ∨ ¬(s)) == True }
+    forAll { (s: Sentence) => reduce(Or(s, Not(s))) == True }
 
   property("Conjunction with self") =
     forAll { (s: Sentence) =>
-      truthTable(reduce(s ∧ s))(atomsIn(s)) == truthTable(s)(atomsIn(s))
+      truthTable(reduce(And(s, s)))(atomsIn(s)) == truthTable(s)(atomsIn(s))
     }
 
   property("Disjunction with self") =
     forAll { (s: Sentence) => 
-      truthTable(reduce(s ∨ s))(atomsIn(s)) == truthTable(s)(atomsIn(s))
+      truthTable(reduce(Or(s, s)))(atomsIn(s)) == truthTable(s)(atomsIn(s))
     }
 
   property("Satisfiability") =
     forAll { (s: Sentence) =>
       sat(s).forall { assignment =>
-        val kb = assignment.foldLeft(Knowledge.Oblivion) { _ given _ }
+        val kb = assignment.foldLeft(oblivion) { _ given _ }
         kb.reduce(s) == True
       }
     }

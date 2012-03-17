@@ -16,11 +16,11 @@ object Knowledge {
 
     def anAtom(p: S): Option[S] =
       p match {
-        case ¬(a @ Literal()) => Some(a)
+        case Not(a @ Literal()) => Some(a)
         case a @ Literal() => Some(a)
-        case ¬(p) => anAtom(p)
-        case p ∨ q => anAtom(p) orElse anAtom(q)
-        case p ∧ q => anAtom(p) orElse anAtom(q)
+        case Not(p) => anAtom(p)
+        case Or(p, q) => anAtom(p) orElse anAtom(q)
+        case And(p, q) => anAtom(p) orElse anAtom(q)
         case _ => None
       }
 
@@ -31,9 +31,9 @@ object Knowledge {
         case p =>
           val Some(atom) = anAtom(p)
           val kb2 = kb.given(atom)
-          lazy val kb3 = kb.given(¬(atom))
+          lazy val kb3 = kb.given(Not(atom))
           recurse(kb2.reduce(p), kb2, accum + atom) orElse
-          recurse(kb3.reduce(p), kb3, accum + ¬(atom))
+          recurse(kb3.reduce(p), kb3, accum + Not(atom))
       }
 
     recurse(Oblivion.reduce(p), Oblivion, Set.empty)
@@ -81,21 +81,21 @@ object Knowledge {
             Absurdity
           else
             new Facts(facts + p)
-        case ¬(¬(p)) =>
+        case Not(Not(p)) =>
           given(p)
-        case ¬(Or(p, q)) =>
-          val pFalse = given(¬(p))
-          if (pFalse == Absurdity) Absurdity else pFalse.given(¬(q))
+        case Not(Or(p, q)) =>
+          val pFalse = given(Not(p))
+          if (pFalse == Absurdity) Absurdity else pFalse.given(Not(q))
         case And(p, q) =>
           val pTrue = given(p)
           if (pTrue == Absurdity) Absurdity else pTrue.given(q)
         case Or(p, q) =>
           possibleWorlds(Seq(given(p), given(q)))
-        case ¬(And(p, q)) =>
-          possibleWorlds(Seq(given(¬(p)), given(¬(q))))
-        case True | ¬(False) =>
+        case Not(And(p, q)) =>
+          possibleWorlds(Seq(given(Not(p)), given(Not(q))))
+        case True | Not(False) =>
           this
-        case False | ¬(True) =>
+        case False | Not(True) =>
           Absurdity
       }
     }
@@ -152,10 +152,10 @@ object Knowledge {
     import system._, Ops._
     p match {
       case p @ (False | True) => p
-      case ¬(True) => False
-      case ¬(False) => True
-      case ¬(¬(p)) => p
-      case ¬(p) => ¬(simplifyOnce(p, kb))
+      case Not(True) => False
+      case Not(False) => True
+      case Not(Not(p)) => p
+      case Not(p) => Not(simplifyOnce(p, kb))
       case orig @ (p And q) =>
         val pTrue = kb.given(p)
         val qTrue = kb.given(q)
@@ -167,13 +167,13 @@ object Knowledge {
           if (p_ == False || q_ == False) False
           else if (q_ == True)            p
           else if (p_ == True)            q
-          else if (p_ != p)               p_ ∧ q
-          else if (q_ != q)               p ∧ q_
+          else if (p_ != p)               And(p_, q)
+          else if (q_ != q)               And(p, q_)
           else                            orig
         }
       case orig @ (p Or q) =>
-        val pFalse = kb.given(¬(p))
-        val qFalse = kb.given(¬(q))
+        val pFalse = kb.given(Not(p))
+        val qFalse = kb.given(Not(q))
         if (pFalse == Absurdity || qFalse == Absurdity)
           True
         else {
@@ -182,8 +182,8 @@ object Knowledge {
           if (p_ == True || q_ == True) True
           else if (q_ == False)         p
           else if (p_ == False)         q
-          else if (p_ != p)             p_ ∨ q
-          else if (q_ != q)             p ∨ q_
+          else if (p_ != p)             Or(p_, q)
+          else if (q_ != q)             Or(p, q_)
           else                          orig
         }
       case p => 
