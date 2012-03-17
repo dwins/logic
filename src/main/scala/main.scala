@@ -1,10 +1,7 @@
 object main extends App {
-  import logic._
-  import symbolic.{ Sentence, symbolAsAtom }
-  val system = implicitly[Sentential[symbolic.Sentence]]
-  import system.Ops._
+  import logic._, symbolic._
 
-  val kb = Knowledge.Oblivion.given('A)
+  val kb = Knowledge.Oblivion[Sentence].given('A)
 
   def test(p: Sentence) = println(kb.reduce(p))
 
