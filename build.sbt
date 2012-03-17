@@ -2,7 +2,7 @@ name := "logic"
 
 organization := "dwins"
 
-version := "0.1"
+version := "0.2"
 
 initialCommands := """
 import logic._
