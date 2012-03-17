@@ -36,18 +36,6 @@ trait Sentential[Sentence] {
     object Literal {
       def unapply(p: Sentence): Boolean = isLiteral(p)
     }
-
-    val ¬ = Not
-    val ∧ = And
-    val ∨ = Or
-
-    class InfixSentenceOperators(p: Sentence) {
-      def ∧(q: Sentence): Sentence = and(p, q)
-      def ∨(q: Sentence): Sentence = or(p, q)
-    }
-
-    implicit def enrichSentence(p: Sentence) = new InfixSentenceOperators(p)
-    implicit def enrichSentenceView[P <% Sentence](p: P) = new InfixSentenceOperators(p)
   }
 }
 
@@ -90,8 +78,8 @@ object Sentential {
     def disprovenBy(facts: Set[Sentence], s: Sentence): Boolean = {
       import Ops._
       s match {
-        case p @ Atom(_) => facts contains ¬(p)
-        case ¬(Atom(p)) => facts contains p
+        case p @ Atom(_) => facts contains Not(p)
+        case Not(Atom(p)) => facts contains p
         case _ => sys.error("Tried to test a non-literal against a knowledge base")
       }
     }

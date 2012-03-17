@@ -1,5 +1,6 @@
 object main extends App {
-  import logic._, Symbolic._
+  import logic._
+  import Symbolic.{ Sentence, symbolAsAtom }
   val system = implicitly[Sentential[Symbolic.Sentence]]
   import system.Ops._
 
@@ -9,7 +10,7 @@ object main extends App {
 
   test('A)
   test('B)
-  test(¬('A))
-  test('A ∧ 'B)
-  test('A ∨ 'B)
+  test(Not('A))
+  test(And('A, 'B))
+  test(Or('A, 'B))
 }
