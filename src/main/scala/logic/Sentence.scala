@@ -40,10 +40,10 @@ trait Sentential[Sentence] {
 }
 
 object Sentential {
-  implicit object symbolicSentences extends Sentential[Symbolic.Sentence] {
-    import Symbolic._
-    val True = Symbolic.True
-    val False = Symbolic.False
+  implicit object symbolicSentences extends Sentential[symbolic.Sentence] {
+    import symbolic._
+    val True = symbolic.True
+    val False = symbolic.False
 
     def and(p: Sentence, q: Sentence): Sentence = And(p, q)
     def extractAnd(p: Sentence): Option[(Sentence, Sentence)] =

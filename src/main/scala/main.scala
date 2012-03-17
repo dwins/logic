@@ -1,7 +1,7 @@
 object main extends App {
   import logic._
-  import Symbolic.{ Sentence, symbolAsAtom }
-  val system = implicitly[Sentential[Symbolic.Sentence]]
+  import symbolic.{ Sentence, symbolAsAtom }
+  val system = implicitly[Sentential[symbolic.Sentence]]
   import system.Ops._
 
   val kb = Knowledge.Oblivion.given('A)

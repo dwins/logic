@@ -1,6 +1,6 @@
 package logic
 
-import Symbolic.{ Sentence, Atom }, Sentential.symbolicSentences._, Ops._
+import symbolic.{ Sentence, Atom }, Sentential.symbolicSentences._, Ops._
 import org.scalacheck._, Arbitrary.arbitrary, Shrink.shrink
 
 object Generators {

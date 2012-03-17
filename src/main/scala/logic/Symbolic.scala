@@ -1,6 +1,10 @@
 package logic
 
-object Symbolic {
+package object symbolic {
+  implicit def symbolAsAtom(s: Symbol): Sentence = Atom(s)
+}
+
+package symbolic {
   sealed trait Sentence
   case object False extends Sentence
   case object True extends Sentence
@@ -20,6 +24,4 @@ object Symbolic {
   case class Or(p: Sentence, q: Sentence) extends Sentence {
     override def toString = "(%s ∨ %s)" format(p, q)
   }
-
-  implicit def symbolAsAtom(s: Symbol): Sentence = Atom(s)
 }
